@@ -3,86 +3,76 @@ export class Car {
 
   private game: Phaser.Game;
   private body: Phaser.Circle;
-  private sensor: Phaser.Line;
-  private cursors: any;
-  private wall: Phaser.Line;
+  private frontSensors: Array<Phaser.Line>;
 
 
   constructor(game: Phaser.Game) {
+    let inc = 0;
     this.game = game;
     this.body = new Phaser.Circle(game.world.centerX, game.world.centerY, 20);
-    this.sensor = new Phaser.Line(this.body.x + this.body.diameter / 2, this.body.y, this.body.x + 80, this.body.y);
-    this.cursors = this.game.input.keyboard.createCursorKeys();
-    this.wall = new Phaser.Line(100, 100, 200, 200);
+    this.frontSensors = new Array(9);
+    this.frontSensors.forEach((sensor: Phaser.Line) => {
+      sensor = new Phaser.Line(this.body.x + this.body.diameter / 2, this.body.y, this.body.x + 50, this.body.y);
+      sensor.fromAngle(sensor.x, sensor.y, ++inc, 50 );
+    });
   }
-
-
-  public update() {
-
-    if (this.cursors.left.isDown) {
-      this.moveLeft();
-      this.updateSensor();
-    } else if (this.cursors.right.isDown) {
-      this.moveRight();
-      this.updateSensor();
-    }
-
-    if (this.cursors.up.isDown) {
-      this.moveUp();
-      this.updateSensor();
-    } else if (this.cursors.down.isDown) {
-      this.moveDown();
-      this.updateSensor();
-    }
-
-
-  }
-
 
   public draw() {
     this.game.debug.geom(this.body, '#cfffff');
-    this.game.debug.geom(this.sensor, '#43dfff');
-    this.game.debug.geom(this.wall, '#ffffa0');
+    this.frontSensors.forEach((sensor: Phaser.Line) => {
+      this.game.debug.geom(sensor, '#43dfff');
+    });
   }
 
 
-  updateSensor() {
-    this.sensor.setTo(this.body.x + this.body.diameter / 2, this.body.y, this.body.x + 80, this.body.y);
-  }
+  getSensorsDistance(line: Phaser.Line): Array<number> {
 
+    const distances: number[] = [];
 
-  getSensorDistance() {
+    this.frontSensors.forEach((s: Phaser.Line) => {
+      const p = s.intersects(line, true);
+      if (p) {
+         distances.push(s.start.distance(p));
+         return;
+      }
+      distances.push(80);
+    });
 
-    let distance = 200;
-
-    let p = this.sensor.intersects(this.wall, true);
-
-    if (p) {
-      distance = this.sensor.start.distance(p);
-    }
-
-    return distance;
-
+    return distances;
   }
 
 
   moveUp() {
     this.body.setTo(this.body.x, this.body.y - 10, this.body.diameter);
+    this.updateSensors();
   }
 
 
   moveDown() {
     this.body.setTo(this.body.x, this.body.y + 10, this.body.diameter);
+    this.updateSensors();
   }
 
 
   moveLeft() {
     this.body.setTo(this.body.x - 10, this.body.y, this.body.diameter);
+    this.updateSensors();
   }
 
 
   moveRight() {
     this.body.setTo(this.body.x + 10, this.body.y, this.body.diameter);
+    this.updateSensors();
   }
 
+
+  updateSensors() {
+
+    let inc = 0;
+    this.frontSensors.forEach((sensor: Phaser.Line) => {
+      sensor = new Phaser.Line(this.body.x + this.body.diameter / 2, this.body.y, this.body.x + 50, this.body.y);
+      sensor.fromAngle(sensor.x, sensor.y, ++inc, 50 );
+    });
+
+  }
 }

@@ -5,38 +5,50 @@ export class Car {
   private body: Phaser.Circle;
   private frontSensors: Array<Phaser.Line>;
 
-
   constructor(game: Phaser.Game) {
-    let inc = 0;
     this.game = game;
     this.body = new Phaser.Circle(game.world.centerX, game.world.centerY, 20);
-    this.frontSensors = new Array(9);
-    this.frontSensors.forEach((sensor: Phaser.Line) => {
-      sensor = new Phaser.Line(this.body.x + this.body.diameter / 2, this.body.y, this.body.x + 50, this.body.y);
-      sensor.fromAngle(sensor.x, sensor.y, ++inc, 50 );
-    });
+    this.createFrontSensors();
   }
+
+  createFrontSensors () {
+    let sensorsAngle = -1;
+    this.frontSensors = new Array(9);
+    for (let i = 0; i < this.frontSensors.length; i++) {
+      const s = new Phaser.Line(this.body.x + this.body.diameter / 2, this.body.y, this.body.x + 80, this.body.y);
+      sensorsAngle += 0.2;
+      s.fromAngle(s.x, s.y, sensorsAngle, 80);
+      this.frontSensors[i] = s;
+    }
+  }
+
 
   public draw() {
     this.game.debug.geom(this.body, '#cfffff');
-    this.frontSensors.forEach((sensor: Phaser.Line) => {
-      this.game.debug.geom(sensor, '#43dfff');
-    });
+    for (let i = 0; i < this.frontSensors.length; i++) {
+      this.game.debug.geom(this.frontSensors[i], '#43dfff');
+    }
   }
 
 
-  getSensorsDistance(line: Phaser.Line): Array<number> {
+  getSensorsDistance(walls: Phaser.Line[]): Array<number> {
 
-    const distances: number[] = [];
+    const distances = new Array(this.frontSensors.length);
 
-    this.frontSensors.forEach((s: Phaser.Line) => {
-      const p = s.intersects(line, true);
-      if (p) {
-         distances.push(s.start.distance(p));
-         return;
+    for (let i = 0; i < this.frontSensors.length; i++) {
+
+      let iPoint = null;
+      for (let k = 0; k < walls.length; k++) {
+        iPoint = this.frontSensors[i].intersects(walls[k], true);
       }
-      distances.push(80);
-    });
+
+      if (iPoint) {
+        distances[i] = this.frontSensors[i].start.distance(iPoint);
+        break;
+      }
+
+      distances[i] = 80;
+    }
 
     return distances;
   }
@@ -67,12 +79,10 @@ export class Car {
 
 
   updateSensors() {
-
-    let inc = 0;
-    this.frontSensors.forEach((sensor: Phaser.Line) => {
-      sensor = new Phaser.Line(this.body.x + this.body.diameter / 2, this.body.y, this.body.x + 50, this.body.y);
-      sensor.fromAngle(sensor.x, sensor.y, ++inc, 50 );
-    });
-
+    for (let i = 0; i < this.frontSensors.length; i++) {
+      const angle = this.frontSensors[i].angle;
+      const len = this.frontSensors[i].length;
+      this.frontSensors[i].fromAngle(this.body.x + this.body.diameter / 2, this.body.y, angle, len);
+    }
   }
 }

@@ -7,6 +7,7 @@ import {Car} from './car';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+
   game: any;
   car: Car;
   walls: Phaser.Line[];
@@ -34,22 +35,22 @@ export class AppComponent {
 
     if (this.cursors.left.isDown) {
       this.car.moveLeft();
+      this.car.getSensorsDistance(this.walls);
 
     } else if (this.cursors.right.isDown) {
       this.car.moveRight();
+      this.car.getSensorsDistance(this.walls);
     }
 
 
     if (this.cursors.up.isDown) {
       this.car.moveUp();
+      this.car.getSensorsDistance(this.walls);
 
     } else if (this.cursors.down.isDown) {
       this.car.moveDown();
+      this.car.getSensorsDistance(this.walls);
     }
-
-    this.walls.forEach((wall) => {
-      console.log(this.car.getSensorsDistance(wall));
-    });
 
   }
 
